@@ -31,9 +31,9 @@ db.collection("messages")
 
         if (data.sender === "visitor") {
           bot.sendMessage(
-            CHAT_ID,
-            `💬 New Message:\n\n${data.text}`
-          );
+  CHAT_ID,
+  `💬 New Message:\n\n${data.text}`
+).catch(console.error);
         }
       }
     });
