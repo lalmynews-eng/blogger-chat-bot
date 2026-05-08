@@ -8,48 +8,49 @@ const app = express();
 const BOT_TOKEN = "8654324292:AAHTgDvaJeLSWw-PXR3my0AmL8lLktnhhbI";
 const CHAT_ID = "1825049962";
 
-// Telegram Bot
 const bot = new TelegramBot(BOT_TOKEN, {
   polling: true,
 });
 
-// Firebase Key Load
 const serviceAccount = JSON.parse(
   fs.readFileSync("./firebase-key.json", "utf8")
 );
 
-// Firebase Init
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 
 const db = admin.firestore();
 
-// Listen Firestore Messages
-db.collection("messages")
-  .orderBy("time")
-  .onSnapshot((snapshot) => {
+let lastMessageId = null;
 
-    snapshot.docChanges().forEach((change) => {
+// Check Firestore Every 5 Seconds
+setInterval(async () => {
 
-      if (change.type === "added") {
+  try {
 
-        const data = change.doc.data();
+    const snapshot = await db
+      .collection("messages")
+      .orderBy("time", "desc")
+      .limit(1)
+      .get();
 
-        console.log(data);
+    snapshot.forEach((doc) => {
+
+      if (doc.id !== lastMessageId) {
+
+        lastMessageId = doc.id;
+
+        const data = doc.data();
 
         if (data.sender === "visitor") {
 
           bot.sendMessage(
             CHAT_ID,
             `💬 New Message:\n\n${data.text}`
-          )
-          .then(() => {
-            console.log("Message Sent");
-          })
-          .catch((err) => {
-            console.log(err);
-          });
+          );
+
+          console.log("Message Sent");
 
         }
 
@@ -57,7 +58,13 @@ db.collection("messages")
 
     });
 
-  });
+  } catch (err) {
+
+    console.log(err);
+
+  }
+
+}, 5000);
 
 // Telegram Reply → Firebase
 bot.on("message", async (msg) => {
@@ -76,12 +83,10 @@ bot.on("message", async (msg) => {
 
 });
 
-// Test Route
 app.get("/", (req, res) => {
   res.send("Bot Running");
 });
 
-// Server Start
 app.listen(3000, () => {
   console.log("Server Running");
 });
