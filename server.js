@@ -5,7 +5,7 @@ import fs from "fs";
 
 const app = express();
 
-const BOT_TOKEN = "8632790553:AAGnW8iIXP_i3dlYys7kO8e3S2qUwfRAAj8";
+const BOT_TOKEN = "8636038098:AAHKRQrPpK3DjtSxc_I4n-9nzhy-0peY6D4";
 const CHAT_ID = "7016214134";
 
 const bot = new TelegramBot(BOT_TOKEN, {
